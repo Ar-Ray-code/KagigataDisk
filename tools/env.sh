@@ -10,10 +10,9 @@ export WS_ROOT
 export PICO_SDK_PATH="${PICO_SDK_PATH:-$HOME/pico/pico-sdk}"
 export KAGIGATA_DIR="${KAGIGATA_DIR:-$WS_ROOT/example/001/kagigatadisk}"
 export KAGIGATA_BUILD="${KAGIGATA_BUILD:-$KAGIGATA_DIR/build}"
-# USB mass-storage drive of the running firmware (udev also links
-# /dev/kagigatadisk to it once tools/install.sh has run).
-export KAGIGATA_VID="${KAGIGATA_VID:-2e8a}"
-export KAGIGATA_PID="${KAGIGATA_PID:-0009}"
+# USB mass-storage example VID:PID
+export KAGIGATA_VID="${KAGIGATA_VID:-cafe}"
+export KAGIGATA_PID="${KAGIGATA_PID:-4002}"
 
 # --- M5Stack Core2 (ESP32 host side, PlatformIO) --------------------------
 export CORE2_DIR="${CORE2_DIR:-$WS_ROOT/example/001/host}"
@@ -45,7 +44,7 @@ find_tty() {
 }
 
 # Print the /dev path of the first whole disk whose USB device matches VID:PID
-# (e.g. find_disk 2e8a 0009). Returns 1 when none is attached.
+# (e.g. find_disk cafe 4002). Returns 1 when none is attached.
 find_disk() {
   local vid="$1" pid="$2" b dev
   for b in /sys/block/*; do
@@ -67,10 +66,10 @@ find_disk() {
 # nothing (e.g. the desktop) has. Returns 1 if it cannot be mounted.
 mount_disk() {
   local dev="$1" mnt
-  mnt="$(findmnt -rno TARGET "$dev" | head -1 || true)"
+  mnt="$(findmnt -no TARGET "$dev" | head -1 || true)"
   if [ -z "$mnt" ]; then
     udisksctl mount -b "$dev" --no-user-interaction >/dev/null 2>&1 || true
-    mnt="$(findmnt -rno TARGET "$dev" | head -1 || true)"
+    mnt="$(findmnt -no TARGET "$dev" | head -1 || true)"
   fi
   [ -n "$mnt" ] && echo "$mnt"
 }

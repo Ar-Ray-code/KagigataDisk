@@ -1,6 +1,6 @@
 ---
 name: kagigatadisk
-description: Use when this USB drive (RP2350-KagigataDisk, label KAGIGATADSK) is mounted - reading what its SPI host logged, adding or removing files the SPI host can read, checking device health, or putting the board into its UF2 bootloader to update the firmware.
+description: Use when this USB drive (volume label "TinyUSB MSC") is mounted - reading what its SPI host logged, adding or removing files the SPI host can read, checking device health, or putting the board into its UF2 bootloader to update the firmware.
 ---
 
 # KagigataDisk USB drive
@@ -15,14 +15,17 @@ by the board.
 
 ## Finding the drive
 
-On Linux it is `/dev/disk/by-id/usb-RP2350_KagigataDisk_<serial>-0:0`, and a
-desktop mounts it as `KAGIGATADSK` (`/run/media/$USER/KAGIGATADSK` or
-`/media/$USER/KAGIGATADSK`). Below, `$DEV` is the device and `$MNT` the mount
+This example firmware uses TinyUSB's example identity (USB `cafe:4002`,
+"TinyUSB Device", SCSI "TinyUSB Mass Storage", volume label "TinyUSB MSC"):
+not IDs assigned to KagigataDisk. On Linux the drive is
+`/dev/disk/by-id/usb-TinyUSB_Mass_Storage_<serial>-0:0`, and a desktop mounts
+it as `TinyUSB MSC` (`/run/media/$USER/TinyUSB MSC` or
+`/media/$USER/TinyUSB MSC` - mind the space: quote the path). Below, `$DEV` is the device and `$MNT` the mount
 point:
 
 ```bash
-DEV=$(ls /dev/disk/by-id/usb-RP2350_KagigataDisk_*-0:0)
-MNT=$(findmnt -rno TARGET "$DEV") || { udisksctl mount -b "$DEV"; MNT=$(findmnt -rno TARGET "$DEV"); }
+DEV=$(readlink -f /dev/disk/by-id/usb-TinyUSB_Mass_Storage_*-0:0)
+MNT=$(findmnt -no TARGET "$DEV") || { udisksctl mount -b "$DEV"; MNT=$(findmnt -no TARGET "$DEV"); }
 ```
 
 ## Layout

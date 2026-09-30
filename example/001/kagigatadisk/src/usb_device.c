@@ -1,6 +1,6 @@
-// The USB device: Raspberry Pi's VID with the Pico SDK's PID and a single
-// mass-storage interface, named "RP2350-KagigataDisk", serving the volume
-// usbdisk.c builds.
+// The USB device of this example firmware: a single mass-storage interface
+// serving the volume usbdisk.c builds. Identifiers, strings and the volume
+// label follow TinyUSB's device examples.
 #include <string.h>
 
 #include "pico/unique_id.h"
@@ -9,8 +9,16 @@
 
 #define SECTOR 512u
 
-#define USB_VID 0x2E8A  // Raspberry Pi
-#define USB_PID 0x0009  // Raspberry Pi Pico SDK
+// Example-only USB identifiers following TinyUSB's device examples (VID
+// 0xCafe, PID derived from the enabled classes, as in TinyUSB 0.18.0's
+// examples/device/msc_dual_lun). These are not USB identifiers assigned to
+// KagigataDisk products; a product built from this code needs its own.
+#define USB_VID 0xCAFE
+#define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))
+#define USB_PID                                                                        \
+  (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | _PID_MAP(MIDI, 3) | \
+   _PID_MAP(VENDOR, 4))
+_Static_assert(USB_PID == 0x4002, "MSC only: TinyUSB's example scheme gives 0x4002");
 
 enum { STR_LANG, STR_MANUFACTURER, STR_PRODUCT, STR_SERIAL };
 
@@ -58,10 +66,10 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
       desc[0] = (uint16_t)((TUSB_DESC_STRING << 8) | 4);
       return desc;
     case STR_MANUFACTURER:
-      s = "Raspberry Pi";
+      s = "TinyUSB";
       break;
     case STR_PRODUCT:
-      s = "RP2350-KagigataDisk";
+      s = "TinyUSB Device";
       break;
     case STR_SERIAL:
       pico_get_unique_board_id_string(serial, sizeof(serial));
@@ -88,12 +96,13 @@ static void pad_copy(uint8_t *dst, const char *src, size_t n) {
   memcpy(dst, src, l < n ? l : n);
 }
 
-// Linux names the disk after these: /dev/disk/by-id/usb-RP2350_KagigataDisk_*.
+// As in TinyUSB's MSC examples. Linux names the disk after these:
+// /dev/disk/by-id/usb-TinyUSB_Mass_Storage_*.
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16],
                         uint8_t product_rev[4]) {
   (void)lun;
-  pad_copy(vendor_id, "RP2350", 8);
-  pad_copy(product_id, "KagigataDisk", 16);
+  pad_copy(vendor_id, "TinyUSB", 8);
+  pad_copy(product_id, "Mass Storage", 16);
   pad_copy(product_rev, "1.0", 4);
 }
 

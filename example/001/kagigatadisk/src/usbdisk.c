@@ -1126,7 +1126,7 @@ static void build_bootsec(void) {
   bootsec[36] = 0x80;
   bootsec[38] = 0x29;
   put32(&bootsec[39], 0x4B474456u);  // volume ID
-  memcpy(&bootsec[43], "KAGIGATADSK", 11);
+  memcpy(&bootsec[43], "TinyUSB MSC", 11);  // as in TinyUSB's cdc_msc example
   memcpy(&bootsec[54], "FAT16   ", 8);
   bootsec[510] = 0x55;
   bootsec[511] = 0xAA;
@@ -1187,7 +1187,7 @@ static void apply_fixed_layout(bool fresh) {
   drop_entries(root, UD_ROOT_ENTRIES, own_root_entry);
   uint32_t idx = dir_end(root, UD_ROOT_ENTRIES);
   char sfn[11];
-  put_entry(root, &idx, UD_ROOT_ENTRIES, NULL, "KAGIGATADSK", ATTR_LABEL, 0, 0, 0);
+  put_entry(root, &idx, UD_ROOT_ENTRIES, NULL, "TinyUSB MSC", ATTR_LABEL, 0, 0, 0);
   put_entry(root, &idx, UD_ROOT_ENTRIES, NULL, "SKILL   MD ", ATTR_ARCHIVE | ATTR_RO,
             NTCASE_LOWER_EXT, SKILL_CL, skill_len() < SKILL_MAX * UD_SECTOR ? skill_len() : SKILL_MAX * UD_SECTOR);
   put_entry(root, &idx, UD_ROOT_ENTRIES, NULL, "COMMAND    ", ATTR_DIR, NTCASE_LOWER_BASE, CMD_CL, 0);

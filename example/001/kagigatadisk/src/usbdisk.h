@@ -1,4 +1,4 @@
-// The USB side: a mass-storage drive ("RP2350-KagigataDisk") that a PC reads
+// The USB side: a mass-storage drive (volume label "TinyUSB MSC") that a PC reads
 // and writes like a USB stick. It is a FAT volume of its own; the SPI host
 // never sees it as such, only the objects in objstore.c:
 //

@@ -34,7 +34,7 @@ Core2のUSBのポートを自動で探して、ビルドと書き込みを行い
 
 KagigataDiskをCore2のカードスロットに挿すと、Core2の画面にファイル一覧が表示され、`FILES` の横の丸が緑になります。画面下のA/B/Cボタンをタップすると、`/log.txt` に1行（`[00:01:23] : [A]` など）追記されます。
 
-とUSBで繋ぐと、KagigataDiskは`RP2350-KagigataDisk`（ボリューム名 `KAGIGATADSK`）というUSBドライブとして見えます。
+PCとUSBで繋ぐと、KagigataDiskはUSBドライブとして見えます。
 
 ```
 SKILL.md                 使い方（英語、読み取り専用）
@@ -54,9 +54,7 @@ flashを傷めないよう、書き込みはRAMに溜めてから次の条件で
 - 最初の書き込みから5秒経ったとき
 - 一定のセクタ数が溜まったとき
 
-```bash
-cat /run/media/$USER/KAGIGATADSK/spi_virtual_device/log.txt   # "[00:01:23] : [A]" のような行
-```
+<br>
 
 - マイコン側で書き込まれたファイルをPC側で閲覧したい場合はマウントし直します。
 - flash（約 1.4 MiB）はPC側とCore2側で共有です。固定の割り当てはなく、先に書いた方が使います。表示される空き容量はマウントした時点の値です。

@@ -15,7 +15,7 @@ concepts off it.
 
 | | board | project | USB (VID:PID) | port |
 |---|---|---|---|---|
-| device | KagigataDisk (RP2354A) | `example/001/kagigatadisk/` (pico-sdk, target `kagigatadisk`) | `2e8a:0009` mass storage | `/dev/disk/by-id/usb-RP2350_KagigataDisk_<serial>-0:0` (udev: `/dev/kagigatadisk`), label `KAGIGATADSK` |
+| device | KagigataDisk (RP2354A) | `example/001/kagigatadisk/` (pico-sdk, target `kagigatadisk`) | `cafe:4002` mass storage (TinyUSB example IDs and strings: `TinyUSB Device`, SCSI `TinyUSB Mass Storage`) | `/dev/disk/by-id/usb-TinyUSB_Mass_Storage_<serial>-0:0` (udev: `/dev/kagigatadisk`), label `TinyUSB MSC` (mount path has a space) |
 | (bootloader) | same, in BOOTSEL | - | `2e8a:000f` UF2 drive | label `RP2350` |
 | host | M5Stack Core2 (ESP32) | `example/001/host/` (PlatformIO, envs `core2`, `native`) | `10c4:ea60` CP2104 | `/dev/ttyUSB*` |
 
@@ -187,8 +187,8 @@ pio ci lib/emu_storage/examples/basic/basic.ino --lib lib/emu_storage --board m5
 ```
 
 ```bash
-DEV=$(ls /dev/disk/by-id/usb-RP2350_KagigataDisk_*-0:0)
-MNT=$(findmnt -rno TARGET "$DEV") || { udisksctl mount -b "$DEV"; MNT=$(findmnt -rno TARGET "$DEV"); }
+DEV=$(readlink -f /dev/disk/by-id/usb-TinyUSB_Mass_Storage_*-0:0)
+MNT=$(findmnt -no TARGET "$DEV") || { udisksctl mount -b "$DEV"; MNT=$(findmnt -no TARGET "$DEV"); }
 udisksctl unmount -b "$DEV" && udisksctl mount -b "$DEV"   # the PC caches: remount to see host changes
 tail "$MNT/spi_virtual_device/log.txt"
 cp memo.txt "$MNT/spi_virtual_device/" && sync             # host sees memo.txt ~5-7 s later
@@ -209,7 +209,7 @@ when both edit the same object.
 
 | symptom | where to look |
 |---|---|
-| `no 2e8a:0009 drive found` | firmware not running: board in BOOTSEL (rerun `kagigata_flash.sh`) or unplugged |
+| `no cafe:4002 drive found` | firmware not running: board in BOOTSEL (rerun `kagigata_flash.sh`) or unplugged |
 | `could not mount ... (run tools/install.sh?)` | polkit rule missing (non-desktop sessions) |
 | build stops: `... differs from ...: run tools/sync_protocol.sh` | protocol copy out of date: `./tools/sync_protocol.sh` |
 | all three LEDs blink together from boot | firmware > 192 KiB; shrink it |

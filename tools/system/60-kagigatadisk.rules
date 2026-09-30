@@ -1,8 +1,9 @@
 # KagigataDisk (RP2350) access without sudo. Installed by tools/install.sh.
 #
-# Running firmware: its USB drive, linked as /dev/kagigatadisk.
-SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ATTRS{idVendor}=="2e8a", \
-    ATTRS{idProduct}=="0009", SYMLINK+="kagigatadisk"
+# Running example firmware: its USB drive, linked as /dev/kagigatadisk
+# (TinyUSB example VID/PID, as in example/001/kagigatadisk/src/usb_device.c).
+SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ATTRS{idVendor}=="cafe", \
+    ATTRS{idProduct}=="4002", SYMLINK+="kagigatadisk"
 # UF2 bootloader (BOOTSEL): raw USB for picotool, if ever used.
 SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000f", \
     MODE="0660", GROUP="plugdev", TAG+="uaccess"
