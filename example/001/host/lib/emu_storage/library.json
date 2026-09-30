@@ -1,0 +1,11 @@
+{
+  "name": "emu_storage",
+  "version": "0.1.0",
+  "description": "Host-side object/file interface for KagigataDisk over the Kagigata SPI protocol.",
+  "keywords": [
+    "kagigatadisk",
+    "spi"
+  ],
+  "frameworks": "arduino",
+  "platforms": "espressif32"
+}

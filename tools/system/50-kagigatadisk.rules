@@ -1,0 +1,14 @@
+// KagigataDisk: let plugdev members mount the firmware's own drive and the
+// RP2350/RP2040 UF2 bootloader drive through udisks without authenticating,
+// even from ssh or other non-seat sessions (udisks only allows that for active
+// local sessions by default). Installed by tools/install.sh.
+polkit.addRule(function(action, subject) {
+  if ((action.id == "org.freedesktop.udisks2.filesystem-mount" ||
+       action.id == "org.freedesktop.udisks2.filesystem-mount-other-seat") &&
+      (action.lookup("drive.vendor") == "RPI" ||
+       (action.lookup("drive.vendor") == "RP2350" &&
+        action.lookup("drive.model") == "KagigataDisk")) &&
+      subject.isInGroup("plugdev")) {
+    return polkit.Result.YES;
+  }
+});

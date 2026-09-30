@@ -1,0 +1,99 @@
+; Device-side SPI slave byte transport.
+;
+; Pin usage, as configured by spi_slave_transport_program_init():
+;   IN base      : MOSI (host -> board)   <- sampled by `in pins, 1`
+;   OUT base     : MISO (board -> host)   <- driven by `out pins, 1`
+;   IN base + k  : SCK                    <- the two `wait` edges
+;
+; k is (SCK - MOSI) mod 32, patched into both `wait` instructions at load time -
+; the number written below is only a placeholder. Because PIO wraps the relative
+; index, MOSI, SCK and CS need not be adjacent nor in any particular order.
+;
+; SPI mode 0 (CPOL=0, CPHA=0): the host samples MISO on the rising edge of SCK
+; and the board samples MOSI on the same edge.
+;
+; MISO is updated right after the falling edge, not right after the rising
+; edge where it is sampled. Updating right after the sample edge (as this
+; program originally did) gives MISO almost a full clock period of setup time
+; but only the ~20 ns the PIO needs to notice an edge (two synchroniser
+; stages plus an instruction) of hold time on the bit just sampled - fine
+; against RP2040's host SPI, which was the only host this was ever verified
+; against, but an M5Stack Core S3 (ESP32-S3) host reading the same signal
+; captured the *next* bit instead of the current one: its SPI peripheral's
+; actual input-sample instant lands past that 20 ns margin (plausibly the
+; GPIO-matrix routing its non-IOMUX SPI pins go through), so MISO had already
+; moved on by the time it sampled. Updating on the falling edge instead
+; trades most of that setup margin for hold time (now nearly half a clock
+; period), which both hosts have ample setup time for at any clock rate this
+; transport is meant to run at.
+;
+; Shift config: OUT/IN both shift left (MSB first), autopull threshold 8,
+; autopush threshold 8. One FIFO word therefore carries exactly one byte:
+; TX words must be pre-shifted as (byte << 24), RX words arrive as (word & 0xff).
+;
+; IMPORTANT: `out` stalls when the TX FIFO is empty, and a stall would also
+; delay the `in` that follows, desynchronising the bit stream. The driver must
+; keep the TX FIFO non-empty at all times - see spi_slave_transport.h.
+;
+; Glitch reject: a breadboard-grade SCK line can ring briefly right at a real
+; transition, or spike momentarily on a bad contact. `wait` unblocks on the
+; *first* sync'd sample at the target level, so a ring can register as a full
+; extra edge - once that happens the byte framing below is permanently off by
+; however many bits until the next CS edge resyncs it, which looks exactly
+; like the "runs fine, then intermittently drops out" behaviour this program
+; was chasing. `jmp pin` (mapped to SCK, not CS - CS is read by core1 over SIO
+; instead and never needed it) re-reads the same, already-synchronized SCK
+; level one PIO cycle later: if it has already reverted, the first sample was
+; the noise, not the edge, so loop back and wait for the real one. This can
+; only ever delay accepting an edge, never invent or drop one, so it cannot by
+; itself desync framing the way it did not having it could.
+.program spi_slave_transport
+
+    out  pins, 1        ; first bit, before any clock arrives
+.wrap_target
+wait_high:
+    wait 1 pin 0        ; candidate rising edge (pin index patched in at load time)
+    jmp  pin sample      ; SCK still reads high one cycle later -> trust it
+    jmp  wait_high        ; it had already dropped back -> that was noise
+sample:
+    in   pins, 1        ; sample MOSI
+wait_low:
+    wait 0 pin 0        ; candidate falling edge
+    jmp  pin wait_low     ; SCK already back high -> that was noise
+    out  pins, 1        ; falling edge confirmed -> present the next MISO bit
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void spi_slave_transport_program_init(PIO pio, uint sm, uint offset,
+                                                    uint pin_mosi, uint pin_sck,
+                                                    uint pin_miso) {
+    pio_sm_config c = spi_slave_transport_program_get_default_config(offset);
+
+    sm_config_set_in_pins(&c, pin_mosi);
+    sm_config_set_out_pins(&c, pin_miso, 1);
+    // Glitch-reject re-check (see the block comment above the program): CS
+    // needs no PIO-side config since core1 reads it over SIO instead.
+    sm_config_set_jmp_pin(&c, pin_sck);
+
+    // MSB first in both directions, one byte per FIFO word.
+    sm_config_set_in_shift(&c, false /*shift_right*/, true /*autopush*/, 8);
+    sm_config_set_out_shift(&c, false /*shift_right*/, true /*autopull*/, 8);
+
+    // Run the state machine as fast as possible: the SPI clock comes from the
+    // host, the PIO clock only has to oversample it.
+    sm_config_set_clkdiv(&c, 1.0f);
+
+    pio_gpio_init(pio, pin_mosi);
+    pio_gpio_init(pio, pin_sck);
+    pio_gpio_init(pio, pin_miso);
+    // Set each direction on its own; the pins are not necessarily adjacent.
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_mosi, 1, false);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_sck, 1, false);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_miso, 1, true);
+
+    pio_sm_init(pio, sm, offset, &c);
+}
+%}
