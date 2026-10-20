@@ -1,6 +1,7 @@
 ---
 name: kagigatadisk
 description: Use when this USB drive (volume label "TinyUSB MSC") is mounted - reading what its SPI host logged, adding or removing files the SPI host can read, checking device health, or putting the board into its UF2 bootloader to update the firmware.
+(c) 2026 Ar-Ray : https://github.com/Ar-Ray-code/KagigataDisk
 ---
 
 # KagigataDisk USB drive
