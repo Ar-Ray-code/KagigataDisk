@@ -1,6 +1,18 @@
 # KagigataDisk
 
-![](./media/kagigatadisk.png)
+KagidgataDiskはUSBとSPIの2つのインタフェースに機能を絞った小型マイコンボードです。
+
+MCUにRP2354Aを使用しており、M5Stackなどのマイコンボードのカードスロットに挿し込むことでSPIの拡張口として利用できます。
+
+ホストマイコンからは専用プロトコルでファイルの読み書きができ、同じファイルをPCからUSBドライブとして閲覧・編集できます。
+
+デバイス側・ホスト側のソフトウェアはOSSとして公開しており、挙動を自由にカスタマイズできます。
+
+販売ページ : [スイッチサイエンス](http://ssci.to/11497)
+
+
+<img width="654" height="433" alt="kagigatadisk_blender" src="https://github.com/user-attachments/assets/c912c4ef-8c7c-4eab-b013-637ef4695034" />
+
 
 ## 特徴
 
