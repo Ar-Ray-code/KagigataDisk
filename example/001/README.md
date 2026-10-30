@@ -20,7 +20,7 @@ M5Stack Core2とKagigataDiskを組み合わせたサンプルです。
 ./tools/kagigata_flash.sh --build
 ```
 
-ビルドしてから、USB経由でUF2ブートローダに切り替えて書き込みます（KagigataDiskのUSB ドライブの `command/update-firmware` を削除すると、ブートローダに切り替わります）。最後に `flashed; drive back as /dev/...` と出れば完了です。
+ビルドしてから、USB経由でUF2ブートローダに切り替えて書き込みます（KagigataDiskのUSB ドライブの `command/update-firmware` を削除すると、ブートローダに切り替わります）。最後に `flashed 001; back as /dev/...` と出れば完了です。
 
 ### 2. M5Stack Core2（ホスト側）
 

@@ -59,8 +59,9 @@ KagigataDisk drive without auth, also over ssh), and adds the user to plugdev.
 
 ```bash
 ./tools/kagigata_build.sh              # cmake (if needed) + ninja -> example/001/kagigatadisk/build/kagigatadisk.uf2
-./tools/kagigata_build.sh --clean      # wipe build/ first
+./tools/kagigata_build.sh --clean      # wipe build/ first (`002` first: example/002)
 ./tools/kagigata_flash.sh [--build]    # boot0 -> mount UF2 drive -> copy -> wait for the drive (~6.7 s)
+                                       # (both take `002` first for example/002 instead)
 ./tools/boot0.sh                       # only reboot into the UF2 bootloader (deletes command/update-firmware)
 ./tools/core2_flash.sh [--build-only | /dev/ttyUSB0]
 
@@ -225,3 +226,13 @@ when both edit the same object.
 
 Not verified: Windows / macOS PCs, file managers other than GNOME Files,
 fsck of the drive image, power loss mid-write, long-term flash wear, LEDs by eye.
+
+## Other firmware on the same board: example/002 (FIDO2 key)
+
+`example/002/kagigatadisk_fido/` turns the board into a CTAP 2.0 security key
+(USB `cafe:4004`, one FIDO HID interface, no SPI). It is not covered by this
+skill; see `example/002/README.md`. What matters here: `tools/boot0.sh` and
+`tools/kagigata_flash.sh` also leave that firmware (vendor command via
+`tools/kgfido.py bootsel`: hold the card contacts for 3 s while all LEDs
+are lit; its credentials are always erased), and it keeps its
+store in the last 64 KiB of flash, which overlaps 001's store.

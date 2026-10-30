@@ -4,6 +4,11 @@
 # (TinyUSB example VID/PID, as in example/001/kagigatadisk/src/usb_device.c).
 SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ATTRS{idVendor}=="cafe", \
     ATTRS{idProduct}=="4002", SYMLINK+="kagigatadisk"
+# FIDO2 key firmware (example/002): its hidraw node, for tools/kgfido.py and
+# browsers outside a desktop session (systemd's fido_id already grants the
+# desktop user access). KGFIDO_USB_VID/PID default, as in usb_desc.c.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="cafe", ATTRS{idProduct}=="4004", \
+    MODE="0660", GROUP="plugdev", TAG+="uaccess"
 # UF2 bootloader (BOOTSEL): raw USB for picotool, if ever used.
 SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000f", \
     MODE="0660", GROUP="plugdev", TAG+="uaccess"

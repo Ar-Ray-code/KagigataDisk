@@ -14,6 +14,13 @@ export KAGIGATA_BUILD="${KAGIGATA_BUILD:-$KAGIGATA_DIR/build}"
 export KAGIGATA_VID="${KAGIGATA_VID:-cafe}"
 export KAGIGATA_PID="${KAGIGATA_PID:-4002}"
 
+# --- KagigataDisk FIDO2 key (example/002, pico-sdk) -----------------------
+export KGFIDO_DIR="${KGFIDO_DIR:-$WS_ROOT/example/002/kagigatadisk_fido}"
+export KGFIDO_BUILD="${KGFIDO_BUILD:-$KGFIDO_DIR/build}"
+# Must match the KGFIDO_USB_VID / KGFIDO_USB_PID the firmware was built with.
+export KGFIDO_VID="${KGFIDO_VID:-cafe}"
+export KGFIDO_PID="${KGFIDO_PID:-4004}"
+
 # --- M5Stack Core2 (ESP32 host side, PlatformIO) --------------------------
 export CORE2_DIR="${CORE2_DIR:-$WS_ROOT/example/001/host}"
 export CORE2_ENV="${CORE2_ENV:-core2}"
@@ -56,6 +63,22 @@ find_disk() {
     if [ "$(cat "$dev/idVendor" 2>/dev/null)" = "$vid" ] &&
        [ "$(cat "$dev/idProduct" 2>/dev/null)" = "$pid" ]; then
       echo "/dev/$(basename "$b")"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Print the /dev path of the first hidraw node whose HID device matches
+# VID:PID (e.g. find_hidraw cafe 4004 for the FIDO key). Returns 1 when none
+# is attached.
+find_hidraw() {
+  local want h
+  want="$(printf '%08X:%08X' "0x$1" "0x$2")"
+  for h in /sys/class/hidraw/hidraw*; do
+    [ -e "$h/device/uevent" ] || continue
+    if grep -qi "^HID_ID=[0-9A-F]*:$want\$" "$h/device/uevent"; then
+      echo "/dev/$(basename "$h")"
       return 0
     fi
   done
