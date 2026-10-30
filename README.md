@@ -61,7 +61,7 @@ udevとpolkitのルールを入れます（sudoを1回求めます）。以降�
 | サンプル | 内容 |
 |---|---|
 | [`example/001/`](example/001/README.md) | M5Stack Core2のファイルビューア。同じファイルを PCからUSBドライブとして読み書きできる。画面のボタンで `/log.txt` に追記。 |
-| [`example/002/`](example/002/README.md) | FIDO2（CTAP 2.0）USBセキュリティキー。USBのみで動作し、カード端子をタッチセンサーとして使う。書き換えもUSBだけで行える。 |
+| [`example/002/`](example/002/README.md) | FIDO2（CTAP 2.0）USBセキュリティキー。USBのみで動作し、カード端子をタッチセンサーとして使う。 |
 
 
 <br>
